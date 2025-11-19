@@ -90,3 +90,6 @@ pip-requirements/
 *.sqlite*
 
 storage
+
+.pytest*
+.tmp*

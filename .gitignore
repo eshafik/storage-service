@@ -88,3 +88,5 @@ pip-requirements/
 .env.*
 .env
 *.sqlite*
+
+storage

@@ -16,6 +16,9 @@ This project uses the project's `requirements.txt` to install Python dependencie
 1. Create and activate a virtualenv (recommended):
 
 ```bash
+git clone https://github.com/eshafik/storage-service.git
+
+cd storage-service
 # create a venv in the project (example name: venv)
 python3 -m venv venv
 
@@ -193,11 +196,3 @@ You can containerize the app with a simple `Dockerfile` that installs requiremen
 - If tests print a `DeprecationWarning` coming from `passlib` on Python 3.12, the project includes a `pytest.ini` filter to suppress that noisy warning during tests. Long-term you can upgrade `passlib`.
 - If you see database write errors while running tests, ensure the `DATABASE_URL` points to a writable path (tests default to a temp sqlite file).
 - If you can't authenticate, ensure you pass the `Authorization: Bearer <token>` header exactly.
-
-## Contributing
-
-Contributions welcome. Please open issues or PRs. If you add a new storage backend, implement the `StorageInterface` in `apps/uploader/services.py` and add configuration wiring.
-
----
-
-If you want, I can also add a `Dockerfile` and a `docker-compose.yml` example to run the app + a local MinIO test S3 backend for S3 integration tests — tell me and I will add them.

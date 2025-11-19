@@ -1,8 +1,10 @@
 import uuid
 
 from tortoise.exceptions import DoesNotExist
+from fastapi import Request, HTTPException
 
 from apps.user.models import User
+from utils.jwt import verify_jwt_token
 from utils.security import hash_password, verify_password
 from typing import Optional, Tuple
 
@@ -51,3 +53,15 @@ async def get_or_create_user(email: str = None,
         return False, user
     user = await create_user(email=email, username=username, name=name, password=password)
     return True, user
+
+
+async def _require_auth(request: Request):
+    """Simple bearer token check using utils.jwt.verify_jwt_token"""
+    auth = request.headers.get('authorization') or request.headers.get('Authorization')
+    if not auth or not auth.lower().startswith('bearer '):
+        raise HTTPException(status_code=401, detail='Missing or invalid authorization header')
+    token = auth.split(None, 1)[1].strip()
+    user = verify_jwt_token(token)
+    if not user:
+        raise HTTPException(status_code=401, detail='Invalid token')
+    return user

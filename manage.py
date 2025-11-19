@@ -19,7 +19,7 @@ from tortoise import fields, models
 
 
 class ExampleModel(models.Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     name = fields.CharField(max_length=255)
 
     class Meta:

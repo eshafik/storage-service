@@ -1,4 +1,5 @@
 import base64
+import binascii
 import hashlib
 import hmac
 import os
@@ -225,10 +226,8 @@ def pick_storage() -> StorageInterface:
 
 
 async def save_blob(blob_id: str, data_b64: str) -> None:
-    try:
-        data = base64.b64decode(data_b64)
-    except Exception as e:
-        raise ValueError('Invalid base64 data') from e
+    # decode base64 (support data URIs and padding fixes)
+    data = decode_base64_data(data_b64)
 
     storage = pick_storage()
     await storage.put(blob_id, data)
@@ -254,3 +253,33 @@ async def get_blob(blob_id: str) -> Optional[dict]:
         'size': meta.size,
         'created_at': meta.created_at.isoformat()
     }
+
+
+def decode_base64_data(data_str: str) -> bytes:
+    """Decode a base64 string or a data URI and return raw bytes.
+
+    Accepts strings like "data:image/png;base64,AAA..." or plain base64.
+    Raises ValueError on invalid base64.
+    """
+    if not isinstance(data_str, str):
+        raise ValueError('data must be a base64 string')
+
+    # Strip data URI prefix if present
+    if data_str.startswith('data:') and ',' in data_str:
+        _, data_str = data_str.split(',', 1)
+
+    # Remove whitespace/newlines
+    data_str = ''.join(data_str.split())
+
+    # Try strict decode
+    try:
+        return base64.b64decode(data_str, validate=True)
+    except (binascii.Error, ValueError):
+        # try to fix padding
+        padding = (-len(data_str)) % 4
+        if padding:
+            data_str += '=' * padding
+        try:
+            return base64.b64decode(data_str, validate=True)
+        except (binascii.Error, ValueError) as e:
+            raise ValueError('Invalid base64 data') from e

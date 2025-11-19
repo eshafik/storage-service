@@ -1,7 +1,6 @@
 import asyncio
 import importlib
-
-import uvloop
+import sys
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
@@ -15,10 +14,27 @@ from config.renderer import (custom_request_validation_exception_handler,
 from config.settings import TORTOISE_ORM_CONFIG, DEBUG, INSTALLED_APPS
 from config.middleware import CustomMiddleware
 
-uvloop.install()
+# uvloop.install() is deprecated on Python >= 3.12; install only on older Pythons
+if sys.version_info < (3, 12):
+    try:
+        import uvloop
+        uvloop.install()
+    except Exception:
+        pass
 
-app = FastAPI(debug=DEBUG)
+from contextlib import asynccontextmanager
 
+
+@asynccontextmanager
+async def lifespan(app):
+    await init_db()
+    print(f"Using event loop: {type(asyncio.get_event_loop())}")
+    yield
+    await close_db()
+
+app = FastAPI(debug=DEBUG, lifespan=lifespan)
+
+# add middleware after creating app
 app.add_middleware(CustomMiddleware)
 
 
@@ -40,15 +56,7 @@ for app_name in INSTALLED_APPS:
         TORTOISE_ORM_CONFIG["apps"]["models"]["models"].append(f"{app_name}.models")
 
 
-@app.on_event("startup")
-async def startup_event():
-    await init_db()
-    print(f"Using event loop: {type(asyncio.get_event_loop())}")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await close_db()
+# NOTE: startup/shutdown handled by the `lifespan` asynccontextmanager above.
 
 
 @app.middleware("http")

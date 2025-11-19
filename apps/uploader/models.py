@@ -8,7 +8,7 @@ from tortoise import fields, models
 
 class BlobMeta(models.Model):
     # id can be any string (uuid, path, random) and serves as the unique reference
-    id = fields.CharField(pk=True, max_length=255)
+    id = fields.CharField(primary_key=True, max_length=255)
     size = fields.IntField()
     backend = fields.CharField(max_length=50, null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
@@ -23,7 +23,7 @@ class BlobData(models.Model):
 
     The id mirrors BlobMeta.id and is the primary key here as well.
    """
-    id = fields.CharField(pk=True, max_length=255)
+    id = fields.CharField(primary_key=True, max_length=255)
     data = fields.BinaryField()
 
     class Meta:

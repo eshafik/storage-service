@@ -187,10 +187,6 @@ Blob payload note:
 
 - When calling `POST /v1/blobs`, pass the `data` field as raw base64 (no `data:...;base64,` prefix). The service expects valid base64. Although some helper code may tolerate data-URIs, clients should send the base64 payload only.
 
-## Running in Docker (optional)
-
-You can containerize the app with a simple `Dockerfile` that installs requirements and runs `uvicorn main:app` (not included by default here). If you deploy behind a TLS-terminating proxy you can expose the Swagger UI at `https://your-host/docs`.
-
 ## Troubleshooting
 
 - If tests print a `DeprecationWarning` coming from `passlib` on Python 3.12, the project includes a `pytest.ini` filter to suppress that noisy warning during tests. Long-term you can upgrade `passlib`.
